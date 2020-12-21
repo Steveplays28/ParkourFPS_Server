@@ -4,7 +4,7 @@ using System.Net;
 using System.Net.Sockets;
 using UnityEngine;
 
-public class Server
+public static class Server
 {
     public static int MaxPlayers { get; private set; }
     public static int Port { get; private set; }
@@ -109,16 +109,17 @@ public class Server
 
     private static void InitializeServerData()
     {
-        for (int i = 1; i <= MaxPlayers; i++)
+        for (int i = 0; i < MaxPlayers; i++)
         {
             clients.Add(i, new Client(i));
         }
 
         packetHandlers = new Dictionary<int, PacketHandler>()
-            {
-                { (int)ClientPackets.welcomeReceived, ServerHandle.WelcomeReceived },
-                { (int)ClientPackets.udpTestReceive, ServerHandle.UDPTestReceived }
-            };
+        {
+            { (int)ClientPackets.welcomeReceived, ServerHandle.WelcomeReceived },
+            { (int)ClientPackets.udpTestReceive, ServerHandle.UDPTestReceived },
+            { (int)ClientPackets.playerInput, ServerHandle.PlayerInput }
+        };
 
         Debug.Log("Initialized packets.");
     }

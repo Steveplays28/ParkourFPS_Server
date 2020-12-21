@@ -1,4 +1,6 @@
-﻿public class ServerSend
+﻿using UnityEngine;
+
+public class ServerSend
 {
     private static void SendTCPData(int _toClient, Packet _packet)
     {
@@ -21,6 +23,15 @@
         }
     }
 
+    private static void SendUDPDataToAll(Packet _packet)
+    {
+        _packet.WriteLength();
+        for (int i = 0; i < Server.MaxPlayers; i++)
+        {
+            Server.clients[i].udp.SendData(_packet);
+        }
+    }
+
     private static void SendTCPDataToAll(int _exceptClient, Packet _packet)
     {
         _packet.WriteLength();
@@ -29,6 +40,18 @@
             if (i != _exceptClient)
             {
                 Server.clients[i].tcp.SendData(_packet);
+            }
+        }
+    }
+
+    private static void SendUDPDataToAll(int _exceptClient, Packet _packet)
+    {
+        _packet.WriteLength();
+        for (int i = 0; i < Server.MaxPlayers; i++)
+        {
+            if (i != _exceptClient)
+            {
+                Server.clients[i].udp.SendData(_packet);
             }
         }
     }
@@ -61,10 +84,32 @@
         {
             _packet.Write(_player.id);
             _packet.Write(_player.username);
-            _packet.Write(_player.position);
-            _packet.Write(_player.rotation);
+            _packet.Write(_player.transform.position);
+            _packet.Write(_player.transform.rotation);
 
             SendTCPData(_toClient, _packet);
+        }
+    }
+
+    public static void PlayerPosition(int _id, Vector3 _position)
+    {
+        using (Packet _packet = new Packet((int)ServerPackets.playerPosition))
+        {
+            _packet.Write(_id);
+            _packet.Write(_position);
+
+            SendUDPDataToAll(_packet);
+        }
+    }
+
+    public static void PlayerRotation(int _id, Quaternion _rotation)
+    {
+        using (Packet _packet = new Packet((int)ServerPackets.playerRotation))
+        {
+            _packet.Write(_id);
+            _packet.Write(_rotation);
+
+            SendUDPDataToAll(_packet);
         }
     }
     #endregion
