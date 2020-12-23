@@ -144,10 +144,10 @@ MonoBehaviour:
   camera: {fileID: 0}
   horizontalSensitivity: 2
   verticalSensitivity: 2
-  acceleration: 750
-  counterAcceleration: 750
-  walkMaxSpeed: 1000
-  runMaxSpeed: 1500
-  jumpHeight: 5
+  acceleration: 1000
+  counterAcceleration: 500
+  walkMaxSpeed: 50
+  runMaxSpeed: 100
+  jumpHeight: 500
   maxJumps: 2
   inputs: 0000000000

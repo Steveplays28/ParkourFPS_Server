@@ -91,6 +91,16 @@ public class ServerSend
         }
     }
 
+    public static void Disconnect(int _id)
+    {
+        using (Packet _packet = new Packet((int)ServerPackets.disconnect))
+        {
+            _packet.Write(_id);
+
+            SendTCPDataToAll(_packet);
+        }
+    }
+
     public static void PlayerPosition(int _id, Vector3 _position)
     {
         using (Packet _packet = new Packet((int)ServerPackets.playerPosition))

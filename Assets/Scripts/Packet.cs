@@ -9,6 +9,7 @@ public enum ServerPackets
     welcome = 1,
     udpTest,
     spawnPlayer,
+    disconnect,
     playerPosition,
     playerRotation
 }
