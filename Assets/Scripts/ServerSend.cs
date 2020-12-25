@@ -112,12 +112,13 @@ public class ServerSend
         }
     }
 
-    public static void PlayerRotation(int _id, Quaternion _rotation)
+    public static void PlayerRotation(int _id, Quaternion _playerRotation, Quaternion _cameraRotation)
     {
         using (Packet _packet = new Packet((int)ServerPackets.playerRotation))
         {
             _packet.Write(_id);
-            _packet.Write(_rotation);
+            _packet.Write(_playerRotation);
+            _packet.Write(_cameraRotation);
 
             SendUDPDataToAll(_packet);
         }

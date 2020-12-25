@@ -26,12 +26,17 @@ public class ServerHandle
 
     public static void PlayerInput(int _fromClient, Packet _packet)
     {
-        bool[] _inputs = new bool[5];
+        bool[] _inputs = new bool[11];
         for (int i = 0; i < _inputs.Length; i++)
         {
             _inputs[i] = _packet.ReadBool();
         }
 
+        Quaternion _mouseRotation = _packet.ReadQuaternion();
+
         Server.clients[_fromClient].player.GetComponent<FpsController>().inputs = _inputs;
+        Server.clients[_fromClient].player.GetComponent<FpsController>().mouseRotation = _mouseRotation;
+
+        Server.clients[_fromClient].player.GetComponent<FpsController>().CustomUpdate();
     }
 }

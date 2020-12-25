@@ -1,15 +1,12 @@
-﻿using System.Collections;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class FpsController : MonoBehaviour
 {
     [Header("Player")]
     public new Camera camera;
-    public float horizontalSensitivity;
-    public float verticalSensitivity;
 
-    private Vector3 rotation;
-
+    [HideInInspector]
+    public Quaternion mouseRotation;
     private Rigidbody rb;
     private Player player;
     private Vector3 localVelocity;
@@ -19,12 +16,15 @@ public class FpsController : MonoBehaviour
     public int counterAcceleration;
     public int walkMaxSpeed;
     public int runMaxSpeed;
+    [HideInInspector]
+    public bool[] inputs;
 
     private int maxSpeed;
     private Vector3 wallRunDirection;
     private bool isWallrunning;
     private bool canMoveFAndB = true;
     private bool canMoveLAndR = true;
+    private bool isRunning;
 
     [Header("Jumping")]
     public int jumpHeight;
@@ -46,18 +46,8 @@ public class FpsController : MonoBehaviour
         rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
 
         maxSpeed = walkMaxSpeed;
+        inputs = new bool[11];
     }
-
-    //void OnEnable()
-    //{
-    //    Start();
-    //}
-
-    //// Update is called once per frame
-    //private void Update()
-    //{
-
-    //}
 
     //void FixedUpdate()
     //{
@@ -80,13 +70,6 @@ public class FpsController : MonoBehaviour
     //    }
     //}
 
-    //void LateUpdate()
-    //{
-    //    //Set rotation
-    //    camera.transform.Rotate(rotation);
-    //    transform.Rotate(new Vector3(transform.rotation.x, rotation.y, transform.rotation.z));
-    //}
-
     //private void OnCollisionExit(Collision collision)
     //{
     //    if (isWallrunning)
@@ -96,24 +79,27 @@ public class FpsController : MonoBehaviour
     //    }
     //}
 
-    [HideInInspector]
-    public bool[] inputs = new bool[5];
-
-    private void FixedUpdate()
+    public void CustomUpdate()
     {
         //Convert world space rigidbody velocity to local velocity
         localVelocity = transform.InverseTransformDirection(rb.velocity);
 
+        //Looking around
+        camera.transform.eulerAngles = new Vector3(mouseRotation.x, mouseRotation.y, camera.transform.eulerAngles.z);
+        transform.eulerAngles = new Vector3(transform.eulerAngles.x, mouseRotation.y, transform.eulerAngles.z);
+
         //Running
-        if (Input.GetKeyDown(KeyCode.LeftShift))
+        if (inputs[6])
         {
             maxSpeed = runMaxSpeed;
             acceleration *= 2;
+            isRunning = true;
         }
-        if (Input.GetKeyUp(KeyCode.LeftShift))
+        if (inputs[7])
         {
             maxSpeed = walkMaxSpeed;
             acceleration /= 2;
+            isRunning = false;
         }
 
         //Movement
@@ -166,22 +152,21 @@ public class FpsController : MonoBehaviour
             rb.AddForce(Vector3.up * jumpHeight, ForceMode.Impulse);
             jumpsLeft -= 1;
             isGrounded = false;
+        }
 
-            StartCoroutine(waitBetweenJumps());
+        //Shooting
+        Gun pistol = GetComponentInChildren<Gun>();
+
+        if (inputs[9])
+        {
+            pistol.Shoot();
         }
 
         //Clamp speed
         rb.velocity = Vector3.ClampMagnitude(rb.velocity, maxSpeed);
 
         ServerSend.PlayerPosition(player.id, transform.position);
-        ServerSend.PlayerRotation(player.id, transform.rotation);
-    }
-
-    private IEnumerator waitBetweenJumps()
-    {
-        canJump = false;
-        yield return new WaitForSeconds(0.1f);
-        canJump = true;
+        ServerSend.PlayerRotation(player.id, transform.rotation, camera.transform.rotation);
     }
 
     void OnCollisionEnter(Collision collision)
