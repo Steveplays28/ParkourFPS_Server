@@ -1,10 +1,11 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using UnityEngine;
 
-public static class Server
+public class Server
 {
     public static int MaxPlayers { get; private set; }
     public static int Port { get; private set; }
@@ -15,6 +16,9 @@ public static class Server
     private static TcpListener tcpListener;
     private static UdpClient udpListener;
 
+    /// <summary>Starts the server.</summary>
+    /// <param name="_maxPlayers">The maximum players that can be connected simultaneously.</param>
+    /// <param name="_port">The port to start the server on.</param>
     public static void Start(int _maxPlayers, int _port)
     {
         MaxPlayers = _maxPlayers;
@@ -24,21 +28,21 @@ public static class Server
         InitializeServerData();
 
         tcpListener = new TcpListener(IPAddress.Any, Port);
-
         tcpListener.Start();
-        tcpListener.BeginAcceptTcpClient(new AsyncCallback(TCPConnectCallback), null);
+        tcpListener.BeginAcceptTcpClient(TCPConnectCallback, null);
 
         udpListener = new UdpClient(Port);
         udpListener.BeginReceive(UDPReceiveCallback, null);
 
-        Debug.Log($"Server started on {Port}.");
+        Debug.Log($"Server started on port {Port}.");
     }
 
+    /// <summary>Handles new TCP connections.</summary>
     private static void TCPConnectCallback(IAsyncResult _result)
     {
         TcpClient _client = tcpListener.EndAcceptTcpClient(_result);
-        tcpListener.BeginAcceptTcpClient(new AsyncCallback(TCPConnectCallback), null);
-        Debug.Log($"Incoming connection from: {_client.Client.RemoteEndPoint}...");
+        tcpListener.BeginAcceptTcpClient(TCPConnectCallback, null);
+        Debug.Log($"Incoming connection from {_client.Client.RemoteEndPoint}...");
 
         for (int i = 1; i <= MaxPlayers; i++)
         {
@@ -52,6 +56,7 @@ public static class Server
         Debug.Log($"{_client.Client.RemoteEndPoint} failed to connect: Server full!");
     }
 
+    /// <summary>Receives incoming UDP data.</summary>
     private static void UDPReceiveCallback(IAsyncResult _result)
     {
         try
@@ -76,12 +81,14 @@ public static class Server
 
                 if (clients[_clientId].udp.endPoint == null)
                 {
+                    // If this is a new connection
                     clients[_clientId].udp.Connect(_clientEndPoint);
                     return;
                 }
 
                 if (clients[_clientId].udp.endPoint.ToString() == _clientEndPoint.ToString())
                 {
+                    // Ensures that the client is not being impersonated by another by sending a false clientID
                     clients[_clientId].udp.HandleData(_packet);
                 }
             }
@@ -92,6 +99,9 @@ public static class Server
         }
     }
 
+    /// <summary>Sends a packet to the specified endpoint via UDP.</summary>
+    /// <param name="_clientEndPoint">The endpoint to send the packet to.</param>
+    /// <param name="_packet">The packet to send.</param>
     public static void SendUDPData(IPEndPoint _clientEndPoint, Packet _packet)
     {
         try
@@ -107,9 +117,10 @@ public static class Server
         }
     }
 
+    /// <summary>Initializes all necessary server data.</summary>
     private static void InitializeServerData()
     {
-        for (int i = 0; i < MaxPlayers; i++)
+        for (int i = 1; i <= MaxPlayers; i++)
         {
             clients.Add(i, new Client(i));
         }
@@ -117,10 +128,11 @@ public static class Server
         packetHandlers = new Dictionary<int, PacketHandler>()
         {
             { (int)ClientPackets.welcomeReceived, ServerHandle.WelcomeReceived },
-            { (int)ClientPackets.udpTestReceive, ServerHandle.UDPTestReceived },
-            { (int)ClientPackets.playerInput, ServerHandle.PlayerInput }
+            { (int)ClientPackets.playerMovement, ServerHandle.PlayerMovement },
+            { (int)ClientPackets.playerShoot, ServerHandle.PlayerShoot },
+            { (int)ClientPackets.playerThrowItem, ServerHandle.PlayerThrowItem },
+            { (int)ClientPackets.playerJump, ServerHandle.PlayerJump }
         };
-
         Debug.Log("Initialized packets.");
     }
 

@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
 
 public class ServerHandle
 {
@@ -8,35 +10,41 @@ public class ServerHandle
         string _username = _packet.ReadString();
 
         Debug.Log($"{Server.clients[_fromClient].tcp.socket.Client.RemoteEndPoint} connected successfully and is now player {_fromClient}.");
-
         if (_fromClient != _clientIdCheck)
         {
-            Debug.LogError($"Player \"{_username}\" (ID: {_fromClient}) has assumed the wrong client ID ({_clientIdCheck})!");
+            Debug.Log($"Player \"{_username}\" (ID: {_fromClient}) has assumed the wrong client ID ({_clientIdCheck})!");
         }
-
         Server.clients[_fromClient].SendIntoGame(_username);
     }
 
-    public static void UDPTestReceived(int _fromClient, Packet _packet)
+    public static void PlayerMovement(int _fromClient, Packet _packet)
     {
-        string _msg = _packet.ReadString();
-
-        Debug.Log($"Received packet via UDP. Contains message: {_msg}");
-    }
-
-    public static void PlayerInput(int _fromClient, Packet _packet)
-    {
-        bool[] _inputs = new bool[11];
+        bool[] _inputs = new bool[_packet.ReadInt()];
         for (int i = 0; i < _inputs.Length; i++)
         {
             _inputs[i] = _packet.ReadBool();
         }
+        Quaternion _rotation = _packet.ReadQuaternion();
 
-        Quaternion _mouseRotation = _packet.ReadQuaternion();
+        Server.clients[_fromClient].player.SetInput(_inputs, _rotation);
+    }
 
-        Server.clients[_fromClient].player.GetComponent<FpsController>().inputs = _inputs;
-        Server.clients[_fromClient].player.GetComponent<FpsController>().mouseRotation = _mouseRotation;
+    public static void PlayerShoot(int _fromClient, Packet _packet)
+    {
+        Vector3 _shootDirection = _packet.ReadVector3();
 
-        Server.clients[_fromClient].player.GetComponent<FpsController>().CustomUpdate();
+        Server.clients[_fromClient].player.Shoot();
+    }
+
+    public static void PlayerThrowItem(int _fromClient, Packet _packet)
+    {
+        Vector3 _throwDirection = _packet.ReadVector3();
+
+        Server.clients[_fromClient].player.ThrowItem();
+    }
+
+    public static void PlayerJump(int _fromClient, Packet _packet)
+    {
+        Server.clients[_fromClient].player.Jump();
     }
 }

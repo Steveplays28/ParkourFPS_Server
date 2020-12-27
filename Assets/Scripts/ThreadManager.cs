@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -19,7 +20,7 @@ public class ThreadManager : MonoBehaviour
     {
         if (_action == null)
         {
-            Debug.Log("No action to execute on main thread!");
+            Console.WriteLine("No action to execute on main thread!");
             return;
         }
 
