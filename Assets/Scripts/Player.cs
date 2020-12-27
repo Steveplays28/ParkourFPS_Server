@@ -15,7 +15,7 @@ public class Player : MonoBehaviour
     private Rigidbody rb;
     private Vector3 localVelocity;
 
-    [Header("Items")]
+    [Header("Projectiles")]
     public int itemAmount;
     public int maxItemAmount;
     public float throwForce;
@@ -23,12 +23,13 @@ public class Player : MonoBehaviour
     [Header("Movement")]
     public int acceleration;
     public int counterAcceleration;
-    public int walkMaxSpeed;
-    public int runMaxSpeed;
+    public float crouchMaxSpeed;
+    public float walkMaxSpeed;
+    public float runMaxSpeed;
     [HideInInspector]
     public bool[] inputs;
 
-    private int maxSpeed;
+    private float maxSpeed;
     private Vector3 wallRunDirection;
     private bool isWallrunning;
     private bool canMoveFAndB = true;
@@ -42,6 +43,11 @@ public class Player : MonoBehaviour
     public bool canJump = true;
 
     private bool isGrounded = true;
+
+    [Header("Crouching")]
+    public bool canCrouch = true;
+
+    private bool isCrouching;
 
     public void Initialize(int _id, string _username)
     {
@@ -62,20 +68,6 @@ public class Player : MonoBehaviour
     {
         //Convert world space rigidbody velocity to local velocity
         localVelocity = transform.InverseTransformDirection(rb.velocity);
-
-        //Running
-        //if (inputs[6])
-        //{
-        //    maxSpeed = runMaxSpeed;
-        //    acceleration *= 2;
-        //    isRunning = true;
-        //}
-        //if (inputs[7])
-        //{
-        //    maxSpeed = walkMaxSpeed;
-        //    acceleration /= 2;
-        //    isRunning = false;
-        //}
 
         //Movement
         if (inputs[0] && canMoveFAndB)
@@ -121,7 +113,7 @@ public class Player : MonoBehaviour
         }
 
         //Clamp speed
-        rb.velocity = Vector3.ClampMagnitude(rb.velocity, maxSpeed);
+        rb.velocity = new Vector3(Mathf.Clamp(rb.velocity.x, -maxSpeed, maxSpeed), rb.velocity.y, Mathf.Clamp(rb.velocity.z, -maxSpeed, maxSpeed));
 
         ServerSend.PlayerPosition(this);
         ServerSend.PlayerRotation(this);
@@ -130,10 +122,11 @@ public class Player : MonoBehaviour
     /// <summary>Updates the player input with newly received input.</summary>
     /// <param name="_inputs">The new key inputs.</param>
     /// <param name="_rotation">The new rotation.</param>
-    public void SetInput(bool[] _inputs, Quaternion _rotation)
+    public void SetInput(bool[] _inputs, Quaternion _playerRotation, Quaternion _cameraRotation)
     {
         inputs = _inputs;
-        transform.rotation = _rotation;
+        transform.rotation = _playerRotation;
+        camera.transform.rotation = _cameraRotation;
     }
 
     private void OnCollisionEnter(Collision collision)
@@ -158,6 +151,48 @@ public class Player : MonoBehaviour
         }
     }
 
+    public void Run()
+    {
+        if (isCrouching)
+        {
+            return;
+        }
+
+        if (isRunning == false)
+        {
+            maxSpeed = runMaxSpeed;
+            acceleration *= 2;
+            isRunning = true;
+        }
+        else
+        {
+            maxSpeed = walkMaxSpeed;
+            acceleration /= 2;
+            isRunning = false;
+        }
+    }
+
+    public void Crouch()
+    {
+        if (isRunning)
+        {
+            return;
+        }
+
+        //if (isCrouching == false)
+        //{
+        //    maxSpeed = crouchMaxSpeed;
+        //    acceleration /= 2;
+        //    isCrouching = true;
+        //}
+        //else
+        //{
+        //    maxSpeed = walkMaxSpeed;
+        //    acceleration *= 2;
+        //    isRunning = false;
+        //}
+    }
+
     public void Shoot()
     {
         if (health <= 0f)
@@ -165,7 +200,7 @@ public class Player : MonoBehaviour
             return;
         }
 
-        if (Physics.Raycast(shootOrigin.position, transform.forward, out RaycastHit _hit, 25f))
+        if (Physics.Raycast(shootOrigin.position, camera.transform.forward, out RaycastHit _hit, 25f))
         {
             if (_hit.collider.CompareTag("Player"))
             {
@@ -188,7 +223,7 @@ public class Player : MonoBehaviour
         if (itemAmount > 0)
         {
             itemAmount--;
-            NetworkManager.instance.InstantiateProjectile(shootOrigin).Initialize(transform.forward, throwForce, id);
+            NetworkManager.instance.InstantiateProjectile(shootOrigin).Initialize(camera.transform.forward, throwForce, id);
         }
     }
 

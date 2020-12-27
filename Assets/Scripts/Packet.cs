@@ -31,7 +31,9 @@ public enum ClientPackets
     playerMovement,
     playerShoot,
     playerThrowItem,
-    playerJump
+    playerJump,
+    playerRun,
+    playerCrouch
 }
 
 public class Packet : IDisposable

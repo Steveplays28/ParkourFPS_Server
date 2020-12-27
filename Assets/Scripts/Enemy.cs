@@ -21,6 +21,7 @@ public class Enemy : MonoBehaviour
     public float detectionRange = 30f;
     public float shootRange = 15f;
     public float shootAccuracy = 0.1f;
+    public float damage;
     public float patrolDuration = 3f;
     public float idleDuration = 1f;
 
@@ -193,7 +194,7 @@ public class Enemy : MonoBehaviour
             {
                 if (Random.value <= shootAccuracy)
                 {
-                    _hit.collider.GetComponent<Player>().TakeDamage(50f);
+                    _hit.collider.GetComponent<Player>().TakeDamage(damage);
                 }
             }
         }

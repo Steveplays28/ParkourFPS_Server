@@ -54,6 +54,8 @@ MeshRenderer:
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -65,6 +67,7 @@ MeshRenderer:
   m_ProbeAnchor: {fileID: 0}
   m_LightProbeVolumeOverride: {fileID: 0}
   m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
   m_PreserveUVs: 0
   m_IgnoreNormalsForChartDetection: 0
   m_ImportantGI: 0
@@ -77,6 +80,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
 --- !u!1 &4187005777591049097
 GameObject:
   m_ObjectHideFlags: 0
@@ -131,11 +135,12 @@ MonoBehaviour:
   gravity: -19.62
   patrolSpeed: 2
   chaseSpeed: 8
-  health: 0
+  health: 100
   maxHealth: 100
   detectionRange: 30
   shootRange: 15
   shootAccuracy: 0.01
+  damage: 50
   patrolDuration: 3
   idleDuration: 1
 --- !u!143 &2319307683833354698
