@@ -133,7 +133,9 @@ public class Server
             { (int)ClientPackets.playerThrowItem, ServerHandle.PlayerThrowItem },
             { (int)ClientPackets.playerJump, ServerHandle.PlayerJump },
             { (int)ClientPackets.playerRun, ServerHandle.PlayerRun },
-            { (int)ClientPackets.playerCrouch, ServerHandle.PlayerCrouch }
+            { (int)ClientPackets.playerCrouch, ServerHandle.PlayerCrouch },
+            { (int)ClientPackets.playerEquipWeapon, ServerHandle.PlayerEquipWeapon },
+            { (int)ClientPackets.playerReloadWeapon, ServerHandle.PlayerReloadWeapon }
         };
         Debug.Log("Initialized packets.");
     }

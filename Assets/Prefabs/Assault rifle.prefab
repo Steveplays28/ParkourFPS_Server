@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 8966624414816263017}
   - component: {fileID: -1083936300610870144}
   m_Layer: 0
-  m_Name: Pistol
+  m_Name: Assault rifle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -26,9 +26,9 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 223335488279205597}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 1, y: 0, z: 1}
-  m_LocalScale: {x: 0.5, y: 0.5, z: 1}
+  m_LocalScale: {x: 0.25, y: 0.5, z: 1.5}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
@@ -95,12 +95,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   player: {fileID: 0}
-  weaponName: Pistol1
-  damage: 100
+  weaponName: AssaultRifle1
+  damage: 30
   usesAmmo: 1
   currentAmmo: 0
-  maxAmmo: 1
+  maxAmmo: 30
   ammoPerShot: 1
   range: 50000
-  reloadTime: 2
+  reloadTime: 4
   isReloading: 0

@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 8966624414816263017}
   - component: {fileID: -1083936300610870144}
   m_Layer: 0
-  m_Name: Pistol
+  m_Name: Knife
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -28,7 +28,7 @@ Transform:
   m_GameObject: {fileID: 223335488279205597}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 1, y: 0, z: 1}
-  m_LocalScale: {x: 0.5, y: 0.5, z: 1}
+  m_LocalScale: {x: 0.25, y: 0.25, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
@@ -97,10 +97,10 @@ MonoBehaviour:
   player: {fileID: 0}
   weaponName: Pistol1
   damage: 100
-  usesAmmo: 1
+  usesAmmo: 0
   currentAmmo: 0
-  maxAmmo: 1
-  ammoPerShot: 1
-  range: 50000
-  reloadTime: 2
+  maxAmmo: 0
+  ammoPerShot: 0
+  range: 2.5
+  reloadTime: 0
   isReloading: 0

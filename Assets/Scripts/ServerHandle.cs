@@ -32,9 +32,7 @@ public class ServerHandle
 
     public static void PlayerShoot(int _fromClient, Packet _packet)
     {
-        Vector3 _shootDirection = _packet.ReadVector3();
-
-        Server.clients[_fromClient].player.Shoot();
+        Server.clients[_fromClient].player.weapon.Shoot();
     }
 
     public static void PlayerThrowItem(int _fromClient, Packet _packet)
@@ -57,5 +55,17 @@ public class ServerHandle
     public static void PlayerCrouch(int _fromClient, Packet _packet)
     {
         Server.clients[_fromClient].player.Crouch();
+    }
+
+    public static void PlayerEquipWeapon(int _fromClient, Packet _packet)
+    {
+        int _weaponId = _packet.ReadInt();
+
+        Server.clients[_fromClient].player.EquipWeapon(_weaponId);
+    }
+
+    public static void PlayerReloadWeapon(int _fromClient, Packet _packet)
+    {
+        Server.clients[_fromClient].player.weapon.Reload();
     }
 }

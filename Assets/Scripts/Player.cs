@@ -10,10 +10,13 @@ public class Player : MonoBehaviour
     public float health;
     public float maxHealth;
     public new Camera camera;
-    public Transform shootOrigin;
 
     private Rigidbody rb;
     private Vector3 localVelocity;
+
+    [Header("Weapon")]
+    public Weapon weapon;
+    public Transform shootOrigin;
 
     [Header("Projectiles")]
     public int itemAmount;
@@ -28,13 +31,17 @@ public class Player : MonoBehaviour
     public float runMaxSpeed;
     [HideInInspector]
     public bool[] inputs;
+    public bool isRunning;
 
     private float maxSpeed;
-    private Vector3 wallRunDirection;
-    private bool isWallrunning;
     private bool canMoveFAndB = true;
     private bool canMoveLAndR = true;
-    private bool isRunning;
+
+    [Header("Wallrunning")]
+    public bool isWallrunning;
+
+    private Vector3 wallRunDirection;
+    private Vector3 wallRunNormal;
 
     [Header("Jumping")]
     public int jumpHeight;
@@ -54,13 +61,12 @@ public class Player : MonoBehaviour
         id = _id;
         username = _username;
         health = maxHealth;
+        maxSpeed = walkMaxSpeed;
         inputs = new bool[5];
 
         rb = gameObject.GetComponent<Rigidbody>();
         rb.isKinematic = false;
         rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
-
-        maxSpeed = walkMaxSpeed;
     }
 
     /// <summary>Processes player input and moves the player.</summary>
@@ -69,46 +75,90 @@ public class Player : MonoBehaviour
         //Convert world space rigidbody velocity to local velocity
         localVelocity = transform.InverseTransformDirection(rb.velocity);
 
-        //Movement
-        if (inputs[0] && canMoveFAndB)
+        //Wallrunning
+        if (Physics.Raycast(transform.position, transform.right, out RaycastHit hitR, 1))
         {
-            rb.AddForce(transform.forward * acceleration, ForceMode.Force);
+            if (!isWallrunning)
+            {
+                rb.velocity = new Vector3(rb.velocity.x, 0, rb.velocity.z);
+                rb.useGravity = false;
+                jumpsLeft = maxJumps;
+                wallRunNormal = hitR.normal;
+                isWallrunning = true;
+            }
+
+            wallRunDirection = Quaternion.AngleAxis(90, Vector3.up) * hitR.normal;
+            Wallrun();
         }
-        if (inputs[1] && canMoveFAndB)
+        else if (Physics.Raycast(transform.position, -transform.right, out RaycastHit hitL, 1))
         {
-            rb.AddForce(transform.forward * -acceleration, ForceMode.Force);
+            if (!isWallrunning)
+            {
+                rb.velocity = new Vector3(rb.velocity.x, 0, rb.velocity.z);
+                rb.useGravity = false;
+                jumpsLeft = maxJumps;
+                wallRunNormal = hitL.normal;
+                isWallrunning = true;
+            }
+
+            wallRunDirection = Quaternion.AngleAxis(-90, Vector3.up) * hitL.normal;
+            Wallrun();
         }
-        if (inputs[2] && canMoveLAndR)
+        else
         {
-            rb.AddForce(transform.right * -acceleration, ForceMode.Force);
-        }
-        if (inputs[3] && canMoveLAndR)
-        {
-            rb.AddForce(transform.right * acceleration, ForceMode.Force);
+            if (isWallrunning)
+            {
+                rb.useGravity = true;
+                wallRunNormal = new Vector3(0, 0, 0);
+                isWallrunning = false;
+            }
         }
 
-        //Counter movement
-        if ((!inputs[0]) && (!inputs[1]))
-        {
-            if (localVelocity.z > 0)
-            {
-                rb.AddRelativeForce(Vector3.back * localVelocity.z * counterAcceleration, ForceMode.Force);
-            }
-            else if (localVelocity.z < 0)
-            {
-                rb.AddRelativeForce(Vector3.forward * -localVelocity.z * counterAcceleration, ForceMode.Force);
-            }
-        }
+        Debug.DrawRay(transform.position, wallRunDirection, Color.cyan, 1);
 
-        if ((!inputs[2]) && (!inputs[3]))
+        if (!isWallrunning)
         {
-            if (localVelocity.x > 0)
+            //Movement
+            if (inputs[0] && canMoveFAndB)
             {
-                rb.AddRelativeForce(Vector3.left * localVelocity.x * counterAcceleration, ForceMode.Force);
+                rb.AddForce(transform.forward * acceleration, ForceMode.Force);
             }
-            else if (localVelocity.x < 0)
+            if (inputs[1] && canMoveFAndB)
             {
-                rb.AddRelativeForce(Vector3.right * -localVelocity.x * counterAcceleration, ForceMode.Force);
+                rb.AddForce(transform.forward * -acceleration, ForceMode.Force);
+            }
+            if (inputs[2] && canMoveLAndR)
+            {
+                rb.AddForce(transform.right * -acceleration, ForceMode.Force);
+            }
+            if (inputs[3] && canMoveLAndR)
+            {
+                rb.AddForce(transform.right * acceleration, ForceMode.Force);
+            }
+
+            //Counter movement
+            if ((!inputs[0]) && (!inputs[1]))
+            {
+                if (localVelocity.z > 0)
+                {
+                    rb.AddRelativeForce(Vector3.back * localVelocity.z * counterAcceleration, ForceMode.Force);
+                }
+                else if (localVelocity.z < 0)
+                {
+                    rb.AddRelativeForce(Vector3.forward * -localVelocity.z * counterAcceleration, ForceMode.Force);
+                }
+            }
+
+            if ((!inputs[2]) && (!inputs[3]))
+            {
+                if (localVelocity.x > 0)
+                {
+                    rb.AddRelativeForce(Vector3.left * localVelocity.x * counterAcceleration, ForceMode.Force);
+                }
+                else if (localVelocity.x < 0)
+                {
+                    rb.AddRelativeForce(Vector3.right * -localVelocity.x * counterAcceleration, ForceMode.Force);
+                }
             }
         }
 
@@ -131,8 +181,13 @@ public class Player : MonoBehaviour
 
     private void OnCollisionEnter(Collision collision)
     {
-        isGrounded = true;
-        jumpsLeft = maxJumps;
+        float slopeAngle = Vector3.Angle(collision.GetContact(0).normal, Vector3.up);
+
+        if (slopeAngle < 45 && slopeAngle > -45)
+        {
+            isGrounded = true;
+            jumpsLeft = maxJumps;
+        }
     }
 
     public void Jump()
@@ -144,10 +199,25 @@ public class Player : MonoBehaviour
 
         if (jumpsLeft > 0 && canJump)
         {
-            rb.velocity = new Vector3(rb.velocity.x, 0, rb.velocity.z);
-            rb.AddForce(Vector3.up * jumpHeight, ForceMode.Impulse);
-            jumpsLeft -= 1;
-            isGrounded = false;
+            if (isWallrunning)
+            {
+                rb.velocity = new Vector3(rb.velocity.x, 0, rb.velocity.z);
+                rb.AddForce(wallRunNormal * jumpHeight * 10, ForceMode.Impulse);
+                rb.AddForce(Vector3.up * jumpHeight, ForceMode.Impulse);
+                jumpsLeft -= 1;
+                isGrounded = false;
+
+                rb.useGravity = true;
+                wallRunNormal = new Vector3(0, 0, 0);
+                isWallrunning = false;
+            }
+            else
+            {
+                rb.velocity = new Vector3(rb.velocity.x, 0, rb.velocity.z);
+                rb.AddForce(Vector3.up * jumpHeight, ForceMode.Impulse);
+                jumpsLeft -= 1;
+                isGrounded = false;
+            }
         }
     }
 
@@ -193,22 +263,25 @@ public class Player : MonoBehaviour
         //}
     }
 
-    public void Shoot()
+    public void Wallrun()
     {
-        if (health <= 0f)
+        if (inputs[0])
         {
-            return;
+            rb.AddForce(wallRunDirection * acceleration, ForceMode.Force);
         }
-
-        if (Physics.Raycast(shootOrigin.position, camera.transform.forward, out RaycastHit _hit, 25f))
+        else if (inputs[1])
         {
-            if (_hit.collider.CompareTag("Player"))
+            rb.AddForce(-wallRunDirection * acceleration, ForceMode.Force);
+        }
+        else
+        {
+            if (Vector3.Dot(rb.velocity, wallRunDirection) > 0)
             {
-                _hit.collider.GetComponent<Player>().TakeDamage(50f);
+                rb.AddForce(wallRunDirection * -Vector3.Dot(rb.velocity, wallRunDirection) * counterAcceleration, ForceMode.Force);
             }
-            else if (_hit.collider.CompareTag("Enemy"))
+            else if (Vector3.Dot(rb.velocity, wallRunDirection) < 0)
             {
-                _hit.collider.GetComponent<Enemy>().TakeDamage(50f);
+                rb.AddForce(wallRunDirection * -Vector3.Dot(rb.velocity, wallRunDirection) * counterAcceleration, ForceMode.Force);
             }
         }
     }
@@ -237,6 +310,7 @@ public class Player : MonoBehaviour
         health -= _damage;
         if (health <= 0f)
         {
+            weapon.CancelReload();
             rb.isKinematic = true;
             health = 0f;
             canMoveFAndB = false;
@@ -268,5 +342,24 @@ public class Player : MonoBehaviour
 
         itemAmount++;
         return true;
+    }
+
+    public void EquipWeapon(int _weaponId)
+    {
+        if (weapon.isReloading)
+        {
+            weapon.CancelReload();
+        }
+
+        Weapon[] _weapons = GetComponentsInChildren<Weapon>(true);
+
+        foreach (Weapon _weapon in _weapons)
+        {
+            _weapon.gameObject.SetActive(false);
+        }
+
+        weapon = _weapons[_weaponId];
+        _weapons[_weaponId].gameObject.SetActive(true);
+        ServerSend.PlayerEquipWeapon(id, this, _weaponId);
     }
 }

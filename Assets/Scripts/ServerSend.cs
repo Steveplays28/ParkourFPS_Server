@@ -124,6 +124,7 @@ public class ServerSend
         {
             _packet.Write(_player.id);
             _packet.Write(_player.transform.rotation);
+            _packet.Write(_player.camera.transform.rotation);
 
             SendUDPDataToAll(_player.id, _packet);
         }
@@ -268,6 +269,37 @@ public class ServerSend
             _packet.Write(_enemy.health);
 
             SendTCPDataToAll(_packet);
+        }
+    }
+
+    public static void PlayerShoot(int _exceptClient, Player _player)
+    {
+        using (Packet _packet = new Packet((int)ServerPackets.playerShoot))
+        {
+            _packet.Write(_player.id);
+
+            SendTCPDataToAll(_exceptClient, _packet);
+        }
+    }
+
+    public static void PlayerEquipWeapon(int _exceptClient, Player _player, int _weaponId)
+    {
+        using (Packet _packet = new Packet((int)ServerPackets.playerEquipWeapon))
+        {
+            _packet.Write(_player.id);
+            _packet.Write(_weaponId);
+
+            SendTCPDataToAll(_exceptClient, _packet);
+        }
+    }
+
+    public static void PlayerReloadWeapon(int _exceptClient, Player _player)
+    {
+        using (Packet _packet = new Packet((int)ServerPackets.playerReloadWeapon))
+        {
+            _packet.Write(_player.id);
+
+            SendTCPDataToAll(_exceptClient, _packet);
         }
     }
     #endregion
