@@ -97,10 +97,13 @@ MonoBehaviour:
   player: {fileID: 0}
   weaponName: AssaultRifle1
   damage: 30
+  range: 50000
   usesAmmo: 1
   currentAmmo: 0
   maxAmmo: 30
   ammoPerShot: 1
-  range: 50000
-  reloadTime: 4
+  reloadTime: 2
   isReloading: 0
+  isAutomatic: 1
+  timeBetweenShots: 0.2
+  isShooting: 0

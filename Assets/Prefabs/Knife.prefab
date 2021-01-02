@@ -97,10 +97,13 @@ MonoBehaviour:
   player: {fileID: 0}
   weaponName: Pistol1
   damage: 100
+  range: 2.5
   usesAmmo: 0
   currentAmmo: 0
   maxAmmo: 0
   ammoPerShot: 0
-  range: 2.5
   reloadTime: 0
   isReloading: 0
+  isAutomatic: 1
+  timeBetweenShots: 0.75
+  isShooting: 0

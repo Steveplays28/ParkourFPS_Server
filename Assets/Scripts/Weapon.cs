@@ -9,13 +9,21 @@ public class Weapon : MonoBehaviour
     [Header("Weapon stats")]
     public string weaponName;
     public float damage;
+    public float range;
+
+    [Header("Reloadable weapons only")]
     public bool usesAmmo = true;
     public int currentAmmo;
     public int maxAmmo;
     public int ammoPerShot;
-    public float range;
     public float reloadTime;
     public bool isReloading;
+
+    [Header("Automatic weapons only")]
+    public bool isAutomatic;
+    public float timeBetweenShots;
+    public bool isShooting;
+    public bool isWaiting;
 
     private void Start()
     {
@@ -24,38 +32,113 @@ public class Weapon : MonoBehaviour
 
     public void Shoot()
     {
-        if (player.health <= 0f || isReloading)
+        if (player.health <= 0f)
+        {
+            return;
+        }
+        else
+        {
+            if (isAutomatic && isShooting)
+            {
+                isShooting = false;
+                return;
+            }
+        }
+
+        if (isReloading)
         {
             return;
         }
         else if (currentAmmo <= 0 && usesAmmo)
         {
             Reload();
+            return;
         }
-        else
+
+        if (isAutomatic && isShooting == true)
         {
-            ServerSend.PlayerShoot(player.id, player);
+            isShooting = false;
+            return;
+        }
 
-            if (Physics.Raycast(transform.parent.position, transform.parent.forward, out RaycastHit _hit, range))
+        if (isAutomatic && isShooting == false)
+        {
+            isShooting = true;
+        }   
+
+        ServerSend.PlayerShoot(player.id, player);
+
+        if (Physics.Raycast(transform.parent.position, transform.parent.forward, out RaycastHit _hit, range))
+        {
+            if (usesAmmo)
             {
-                if (usesAmmo)
-                {
-                    currentAmmo -= ammoPerShot;
-                }
+                currentAmmo -= ammoPerShot;
+            }
 
-                if (_hit.collider.CompareTag("Player"))
+            if (_hit.collider.CompareTag("Player"))
+            {
+                if (_hit.collider.gameObject.GetComponent<Player>().id != player.id)
                 {
-                    if (_hit.collider.gameObject.GetComponent<Player>().id != player.id)
-                    {
-                        _hit.collider.GetComponent<Player>().TakeDamage(damage);
-                    }
-                }
-                else if (_hit.collider.CompareTag("Enemy"))
-                {
-                    _hit.collider.GetComponent<Enemy>().TakeDamage(damage);
+                    _hit.collider.GetComponent<Player>().TakeDamage(damage);
                 }
             }
+            else if (_hit.collider.CompareTag("Enemy"))
+            {
+                _hit.collider.GetComponent<Enemy>().TakeDamage(damage);
+            }
         }
+
+        if (isAutomatic)
+        {
+            StartCoroutine(ShootAfterDelay());
+        }
+    }
+
+    public void ShootAutomatic()
+    {
+        if (player.health <= 0f || isReloading || isShooting == false || isWaiting)
+        {
+            return;
+        }
+        else if (currentAmmo <= 0 && usesAmmo)
+        {
+            Reload();
+            return;
+        }
+
+        ServerSend.PlayerShoot(player.id, player);
+
+        if (Physics.Raycast(transform.parent.position, transform.parent.forward, out RaycastHit _hit, range))
+        {
+            if (usesAmmo)
+            {
+                currentAmmo -= ammoPerShot;
+            }
+
+            if (_hit.collider.CompareTag("Player"))
+            {
+                if (_hit.collider.gameObject.GetComponent<Player>().id != player.id)
+                {
+                    _hit.collider.GetComponent<Player>().TakeDamage(damage);
+                }
+            }
+            else if (_hit.collider.CompareTag("Enemy"))
+            {
+                _hit.collider.GetComponent<Enemy>().TakeDamage(damage);
+            }
+        }
+
+        StartCoroutine(ShootAfterDelay());
+    }
+
+    private IEnumerator ShootAfterDelay()
+    {
+        isWaiting = true;
+        yield return new WaitForSeconds(timeBetweenShots);
+        isWaiting = false;
+        ShootAutomatic();
+
+        yield break;
     }
 
     public void Reload()
@@ -76,6 +159,11 @@ public class Weapon : MonoBehaviour
         currentAmmo = maxAmmo;
         isReloading = false;
 
+        if (isAutomatic)
+        {
+            ShootAutomatic();
+        }
+
         yield break;
     }
 
@@ -86,5 +174,11 @@ public class Weapon : MonoBehaviour
             isReloading = false;
             StopCoroutine(ReloadAfterDelay());
         }
+    }
+
+    public void ResetWeapon()
+    {
+        CancelReload();
+        currentAmmo = maxAmmo;
     }
 }

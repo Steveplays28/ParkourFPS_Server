@@ -16,6 +16,7 @@ public class Player : MonoBehaviour
 
     [Header("Weapon")]
     public Weapon weapon;
+    public Weapon[] weapons;
     public Transform shootOrigin;
 
     [Header("Projectiles")]
@@ -310,7 +311,7 @@ public class Player : MonoBehaviour
         health -= _damage;
         if (health <= 0f)
         {
-            weapon.CancelReload();
+            weapon.ResetWeapon();
             rb.isKinematic = true;
             health = 0f;
             canMoveFAndB = false;
@@ -328,6 +329,13 @@ public class Player : MonoBehaviour
 
         rb.isKinematic = false;
         health = maxHealth;
+        foreach (Weapon _weapon in weapons)
+        {
+            if (_weapon.usesAmmo)
+            {
+                _weapon.currentAmmo = _weapon.maxAmmo;
+            }
+        }
         canMoveFAndB = true;
         canMoveLAndR = true;
         ServerSend.PlayerRespawned(this);
@@ -346,6 +354,11 @@ public class Player : MonoBehaviour
 
     public void EquipWeapon(int _weaponId)
     {
+        if (health <= 0f)
+        {
+            return;
+        }
+
         if (weapon.isReloading)
         {
             weapon.CancelReload();
