@@ -203,6 +203,7 @@ public class Enemy : MonoBehaviour
     public void TakeDamage(float _damage)
     {
         health -= _damage;
+
         if (health <= 0f)
         {
             health = 0f;

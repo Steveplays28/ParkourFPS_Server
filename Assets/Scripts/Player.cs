@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -56,6 +57,11 @@ public class Player : MonoBehaviour
     public bool canCrouch = true;
 
     private bool isCrouching;
+
+    [Header("Healing")]
+    public float healAmount;
+    public float healDelayBig;
+    public float healDelaySmall;
 
     public void Initialize(int _id, string _username)
     {
@@ -122,18 +128,38 @@ public class Player : MonoBehaviour
             //Movement
             if (inputs[0] && canMoveFAndB)
             {
+                if (localVelocity.z < 0)
+                {
+                    localVelocity.z = 0;
+                    rb.velocity = transform.TransformDirection(localVelocity);
+                }
                 rb.AddForce(transform.forward * acceleration, ForceMode.Force);
             }
             if (inputs[1] && canMoveFAndB)
             {
+                if (localVelocity.z > 0)
+                {
+                    localVelocity.z = 0;
+                    rb.velocity = transform.TransformDirection(localVelocity);
+                }
                 rb.AddForce(transform.forward * -acceleration, ForceMode.Force);
             }
             if (inputs[2] && canMoveLAndR)
             {
+                if (localVelocity.x > 0)
+                {
+                    localVelocity.x = 0;
+                    rb.velocity = transform.TransformDirection(localVelocity);
+                }
                 rb.AddForce(transform.right * -acceleration, ForceMode.Force);
             }
             if (inputs[3] && canMoveLAndR)
             {
+                if (localVelocity.x < 0)
+                {
+                    localVelocity.x = 0;
+                    rb.velocity = transform.TransformDirection(localVelocity);
+                }
                 rb.AddForce(transform.right * acceleration, ForceMode.Force);
             }
 
@@ -172,7 +198,8 @@ public class Player : MonoBehaviour
 
     /// <summary>Updates the player input with newly received input.</summary>
     /// <param name="_inputs">The new key inputs.</param>
-    /// <param name="_rotation">The new rotation.</param>
+    /// <param name="_playerRotation">The new player rotation.</param>
+    /// <param name="_cameraRotation">The new camera rotation.</param>
     public void SetInput(bool[] _inputs, Quaternion _playerRotation, Quaternion _cameraRotation)
     {
         inputs = _inputs;
@@ -308,7 +335,9 @@ public class Player : MonoBehaviour
             return;
         }
 
+
         health -= _damage;
+
         if (health <= 0f)
         {
             weapon.ResetWeapon();
@@ -319,8 +348,35 @@ public class Player : MonoBehaviour
             transform.position = new Vector3(0f, 25f, 0f);
             StartCoroutine(Respawn());
         }
+        else
+        {
+            StopCoroutine(HealAutomatic(healDelayBig));
+            StartCoroutine(HealAutomatic(healDelayBig));
+        }
 
         ServerSend.PlayerHealth(this);
+    }
+
+    public void Heal(float _healAmount)
+    {
+        health += _healAmount;
+
+        ServerSend.PlayerHealth(this);
+    }
+
+    private IEnumerator HealAutomatic(float _healDelay)
+    {
+        if (health <= 0f)
+        {
+            yield break;
+        }
+
+        if (health != maxHealth)
+        {
+            yield return new WaitForSeconds(_healDelay);
+            Heal(healAmount);
+            StartCoroutine(HealAutomatic(healDelaySmall));
+        }
     }
 
     private IEnumerator Respawn()
