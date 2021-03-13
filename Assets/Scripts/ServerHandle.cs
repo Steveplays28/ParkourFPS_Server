@@ -35,6 +35,11 @@ public class ServerHandle
         Server.clients[_fromClient].player.weapon.Shoot();
     }
 
+    public static void PlayerStopShooting(int fromClient, Packet packet)
+    {
+        Server.clients[fromClient].player.weapon.StopShooting();
+    }
+
     public static void PlayerThrowItem(int _fromClient, Packet _packet)
     {
         Vector3 _throwDirection = _packet.ReadVector3();
@@ -66,6 +71,7 @@ public class ServerHandle
 
     public static void PlayerReloadWeapon(int _fromClient, Packet _packet)
     {
-        Server.clients[_fromClient].player.weapon.Reload();
+        Server.clients[_fromClient].player.weapon.StartCoroutine("Reload");
+        Debug.Log("reload pls");
     }
 }

@@ -130,9 +130,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   id: 0
-  username: 
-  health: 0
+  currentHealth: 100
   maxHealth: 100
+  damageEffect: {fileID: 0}
+  healEffect: {fileID: 0}
+  spawnLocation: {x: 0, y: 0, z: 0}
+  username: 
   camera: {fileID: 822291903658803691}
   weapon: {fileID: 582690405005805014}
   weapons: []
@@ -311,9 +314,19 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -1083936300610870144, guid: c30ba01f8579bda48b9d945584adb55e,
         type: 3}
+      propertyPath: entity
+      value: 
+      objectReference: {fileID: 1920120271202843960}
+    - target: {fileID: -1083936300610870144, guid: c30ba01f8579bda48b9d945584adb55e,
+        type: 3}
       propertyPath: player
       value: 
       objectReference: {fileID: 1920120271202843960}
+    - target: {fileID: -1083936300610870144, guid: c30ba01f8579bda48b9d945584adb55e,
+        type: 3}
+      propertyPath: bulletOrigin
+      value: 
+      objectReference: {fileID: 4375789778787327676}
     - target: {fileID: 223335488279205597, guid: c30ba01f8579bda48b9d945584adb55e,
         type: 3}
       propertyPath: m_Name
@@ -396,9 +409,24 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -1083936300610870144, guid: 8b7b0933ea3be1341a20e31ce7b39005,
         type: 3}
+      propertyPath: entity
+      value: 
+      objectReference: {fileID: 1920120271202843960}
+    - target: {fileID: -1083936300610870144, guid: 8b7b0933ea3be1341a20e31ce7b39005,
+        type: 3}
       propertyPath: player
       value: 
       objectReference: {fileID: 1920120271202843960}
+    - target: {fileID: -1083936300610870144, guid: 8b7b0933ea3be1341a20e31ce7b39005,
+        type: 3}
+      propertyPath: currentAmmo
+      value: 30
+      objectReference: {fileID: 0}
+    - target: {fileID: -1083936300610870144, guid: 8b7b0933ea3be1341a20e31ce7b39005,
+        type: 3}
+      propertyPath: bulletOrigin
+      value: 
+      objectReference: {fileID: 4375789778787327676}
     - target: {fileID: 223335488279205597, guid: 8b7b0933ea3be1341a20e31ce7b39005,
         type: 3}
       propertyPath: m_Name
@@ -481,9 +509,24 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -1083936300610870144, guid: b0460b7e7d334b242a4ef4b5a8e21b25,
         type: 3}
+      propertyPath: entity
+      value: 
+      objectReference: {fileID: 1920120271202843960}
+    - target: {fileID: -1083936300610870144, guid: b0460b7e7d334b242a4ef4b5a8e21b25,
+        type: 3}
       propertyPath: player
       value: 
       objectReference: {fileID: 1920120271202843960}
+    - target: {fileID: -1083936300610870144, guid: b0460b7e7d334b242a4ef4b5a8e21b25,
+        type: 3}
+      propertyPath: currentAmmo
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: -1083936300610870144, guid: b0460b7e7d334b242a4ef4b5a8e21b25,
+        type: 3}
+      propertyPath: bulletOrigin
+      value: 
+      objectReference: {fileID: 4375789778787327676}
     - target: {fileID: 223335488279205597, guid: b0460b7e7d334b242a4ef4b5a8e21b25,
         type: 3}
       propertyPath: m_Name

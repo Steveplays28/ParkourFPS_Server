@@ -4,181 +4,99 @@ using UnityEngine;
 public class Weapon : MonoBehaviour
 {
     [Header("References")]
-    public Player player;
+    public Entity entity;
+
+    public Mesh model;
+    public Mesh barrel;
+    public Mesh grip;
+    public Mesh optic;
+    public Mesh magazine;
+
+    public Transform bulletOrigin;
 
     [Header("Weapon stats")]
     public string weaponName;
-    public float damage;
+    public int damage;
     public float range;
-
-    [Header("Reloadable weapons only")]
-    public bool usesAmmo = true;
     public int currentAmmo;
     public int maxAmmo;
     public int ammoPerShot;
     public float reloadTime;
     public bool isReloading;
-
-    [Header("Automatic weapons only")]
-    public bool isAutomatic;
     public float timeBetweenShots;
-    public bool isShooting;
-    public bool isWaiting;
+    public bool shooting;
+    public bool isAutomatic;
+
+    [Header("Animations")]
+    public AnimationClip idleAnim;
+    public AnimationClip shootAnim;
+    public AnimationClip reloadAnim;
 
     private void Start()
     {
-        currentAmmo = maxAmmo;
+        //Instantiate(barrel, );
     }
 
     public void Shoot()
     {
-        if (player.health <= 0f)
+        if (entity.currentHealth <= 0f || currentAmmo <= 0)
         {
             return;
         }
-        else
+
+        if (shooting == false)
         {
-            if (isAutomatic && isShooting)
+            shooting = true;
+        }
+
+        if (Physics.Raycast(entity.transform.position, entity.transform.forward, out RaycastHit hit, range))
+        {
+            if (hit.collider.gameObject.GetComponent<Entity>() != null)
             {
-                isShooting = false;
-                return;
+                hit.collider.gameObject.GetComponent<Entity>().Damage(damage);
             }
         }
+        currentAmmo -= ammoPerShot;
 
-        if (isReloading)
+        if (isAutomatic && shooting)
         {
-            return;
-        }
-        else if (currentAmmo <= 0 && usesAmmo)
-        {
-            Reload();
-            return;
-        }
-
-        if (isAutomatic && isShooting == true)
-        {
-            isShooting = false;
-            return;
-        }
-
-        if (isAutomatic && isShooting == false)
-        {
-            isShooting = true;
-        }   
-
-        ServerSend.PlayerShoot(player.id, player);
-
-        if (Physics.Raycast(transform.parent.position, transform.parent.forward, out RaycastHit _hit, range))
-        {
-            if (usesAmmo)
-            {
-                currentAmmo -= ammoPerShot;
-            }
-
-            if (_hit.collider.CompareTag("Player"))
-            {
-                if (_hit.collider.gameObject.GetComponent<Player>().id != player.id)
-                {
-                    _hit.collider.GetComponent<Player>().TakeDamage(damage);
-                }
-            }
-            else if (_hit.collider.CompareTag("Enemy"))
-            {
-                _hit.collider.GetComponent<Enemy>().TakeDamage(damage);
-            }
-        }
-
-        if (isAutomatic)
-        {
-            StartCoroutine(ShootAfterDelay());
+            StartCoroutine(ShootAgainAfterDelay());
         }
     }
 
-    public void ShootAutomatic()
+    public IEnumerator ShootAgainAfterDelay()
     {
-        if (player.health <= 0f || isReloading || isShooting == false || isWaiting)
-        {
-            return;
-        }
-        else if (currentAmmo <= 0 && usesAmmo)
-        {
-            Reload();
-            return;
-        }
-
-        ServerSend.PlayerShoot(player.id, player);
-
-        if (Physics.Raycast(transform.parent.position, transform.parent.forward, out RaycastHit _hit, range))
-        {
-            if (usesAmmo)
-            {
-                currentAmmo -= ammoPerShot;
-            }
-
-            if (_hit.collider.CompareTag("Player"))
-            {
-                if (_hit.collider.gameObject.GetComponent<Player>().id != player.id)
-                {
-                    _hit.collider.GetComponent<Player>().TakeDamage(damage);
-                }
-            }
-            else if (_hit.collider.CompareTag("Enemy"))
-            {
-                _hit.collider.GetComponent<Enemy>().TakeDamage(damage);
-            }
-        }
-
-        StartCoroutine(ShootAfterDelay());
-    }
-
-    private IEnumerator ShootAfterDelay()
-    {
-        isWaiting = true;
         yield return new WaitForSeconds(timeBetweenShots);
-        isWaiting = false;
-        ShootAutomatic();
-
-        yield break;
+        if (shooting)
+        {
+            Shoot();
+        }
     }
 
-    public void Reload()
+    public void StopShooting()
     {
-        if (currentAmmo == maxAmmo || player.health <= 0f || isReloading || usesAmmo == false)
+        shooting = false;
+    }
+
+    public IEnumerator Reload()
+    {
+        if (entity.currentHealth <= 0f || currentAmmo == maxAmmo)
         {
-            return;
+            yield break;
         }
 
-        isReloading = true;
-        ServerSend.PlayerReloadWeapon(player.id, player);
-        StartCoroutine(ReloadAfterDelay());
-    }
-
-    private IEnumerator ReloadAfterDelay()
-    {
         yield return new WaitForSeconds(reloadTime);
         currentAmmo = maxAmmo;
-        isReloading = false;
-
-        if (isAutomatic)
-        {
-            ShootAutomatic();
-        }
-
-        yield break;
+        Debug.Log("haha reload go brrrrr");
     }
 
-    public void CancelReload()
+    public void StopReload()
     {
-        if (isReloading)
-        {
-            isReloading = false;
-            StopCoroutine(ReloadAfterDelay());
-        }
+        StopCoroutine(Reload());
     }
 
     public void ResetWeapon()
     {
-        CancelReload();
         currentAmmo = maxAmmo;
     }
 }

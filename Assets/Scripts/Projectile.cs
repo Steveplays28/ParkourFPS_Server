@@ -12,7 +12,7 @@ public class Projectile : MonoBehaviour
     public int thrownByPlayer;
     public Vector3 initialForce;
     public float explosionRadius = 1.5f;
-    public float explosionDamage = 75f;
+    public int explosionDamage = 75;
 
     private void Start()
     {
@@ -49,13 +49,9 @@ public class Projectile : MonoBehaviour
         Collider[] _colliders = Physics.OverlapSphere(transform.position, explosionRadius);
         foreach (Collider _collider in _colliders)
         {
-            if (_collider.CompareTag("Player"))
+            if (_collider.gameObject.GetComponent<Entity>() != null)
             {
-                _collider.GetComponent<Player>().TakeDamage(explosionDamage);
-            }
-            else if (_collider.CompareTag("Enemy"))
-            {
-                _collider.GetComponent<Enemy>().TakeDamage(explosionDamage);
+                _collider.gameObject.GetComponent<Entity>().Damage(explosionDamage);
             }
         }
 

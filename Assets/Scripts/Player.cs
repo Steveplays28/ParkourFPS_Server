@@ -1,15 +1,10 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections;
 using UnityEngine;
 
-public class Player : MonoBehaviour
+public class Player : Entity
 {
     [Header("Player")]
-    public int id;
     public string username;
-    public float health;
-    public float maxHealth;
     public new Camera camera;
 
     private Rigidbody rb;
@@ -67,13 +62,11 @@ public class Player : MonoBehaviour
     {
         id = _id;
         username = _username;
-        health = maxHealth;
         maxSpeed = walkMaxSpeed;
         inputs = new bool[5];
 
         rb = gameObject.GetComponent<Rigidbody>();
         rb.isKinematic = false;
-        rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
     }
 
     /// <summary>Processes player input and moves the player.</summary>
@@ -192,7 +185,7 @@ public class Player : MonoBehaviour
         //Clamp speed
         rb.velocity = new Vector3(Mathf.Clamp(rb.velocity.x, -maxSpeed, maxSpeed), rb.velocity.y, Mathf.Clamp(rb.velocity.z, -maxSpeed, maxSpeed));
 
-        ServerSend.PlayerPosition(this);
+        ServerSend.EntityPosition(this);
         ServerSend.PlayerRotation(this);
     }
 
@@ -220,7 +213,7 @@ public class Player : MonoBehaviour
 
     public void Jump()
     {
-        if (health <= 0f)
+        if (currentHealth <= 0f)
         {
             return;
         }
@@ -316,7 +309,7 @@ public class Player : MonoBehaviour
 
     public void ThrowItem()
     {
-        if (health <= 0f)
+        if (currentHealth <= 0f)
         {
             return;
         }
@@ -328,73 +321,45 @@ public class Player : MonoBehaviour
         }
     }
 
-    public void TakeDamage(float _damage)
+    public override void Damage(int amount)
     {
-        if (health <= 0f)
-        {
-            return;
-        }
-
-
-        health -= _damage;
-
-        if (health <= 0f)
-        {
-            weapon.ResetWeapon();
-            rb.isKinematic = true;
-            health = 0f;
-            canMoveFAndB = false;
-            canMoveLAndR = false;
-            transform.position = new Vector3(0f, 25f, 0f);
-            StartCoroutine(Respawn());
-        }
-        else
-        {
-            StopCoroutine(HealAutomatic(healDelayBig));
-            StartCoroutine(HealAutomatic(healDelayBig));
-        }
-
-        ServerSend.PlayerHealth(this);
+        // Override code here
+        base.Damage(amount);
     }
 
-    public void Heal(float _healAmount)
+    public override void Heal(int amount)
     {
-        health += _healAmount;
-
-        ServerSend.PlayerHealth(this);
+        // Override code here
+        base.Heal(amount);
     }
 
     private IEnumerator HealAutomatic(float _healDelay)
     {
-        if (health <= 0f)
+        if (currentHealth <= 0f)
         {
             yield break;
         }
 
-        if (health != maxHealth)
+        if (currentHealth != maxHealth)
         {
             yield return new WaitForSeconds(_healDelay);
-            Heal(healAmount);
+            Heal((int)healAmount);
             StartCoroutine(HealAutomatic(healDelaySmall));
         }
     }
 
-    private IEnumerator Respawn()
+    public override IEnumerator Respawn()
     {
-        yield return new WaitForSeconds(5f);
+        yield return new WaitForSeconds(respawnDelay);
 
+        currentHealth = maxHealth;
         rb.isKinematic = false;
-        health = maxHealth;
         foreach (Weapon _weapon in weapons)
         {
-            if (_weapon.usesAmmo)
-            {
-                _weapon.currentAmmo = _weapon.maxAmmo;
-            }
+            _weapon.ResetWeapon();
         }
         canMoveFAndB = true;
         canMoveLAndR = true;
-        ServerSend.PlayerRespawned(this);
     }
 
     public bool AttemptPickupItem()
@@ -410,14 +375,14 @@ public class Player : MonoBehaviour
 
     public void EquipWeapon(int _weaponId)
     {
-        if (health <= 0f)
+        if (currentHealth <= 0f)
         {
             return;
         }
 
         if (weapon.isReloading)
         {
-            weapon.CancelReload();
+            weapon.StopReload();
         }
 
         Weapon[] _weapons = GetComponentsInChildren<Weapon>(true);

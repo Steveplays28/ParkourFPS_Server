@@ -2,13 +2,12 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Enemy : MonoBehaviour
+public class Enemy : Entity
 {
     public static int maxEnemies = 10;
     public static Dictionary<int, Enemy> enemies = new Dictionary<int, Enemy>();
     private static int nextEnemyId = 1;
 
-    public int id;
     public EnemyState state;
     public Player target;
     public CharacterController controller;
@@ -16,8 +15,6 @@ public class Enemy : MonoBehaviour
     public float gravity = -9.81f;
     public float patrolSpeed = 2f;
     public float chaseSpeed = 8f;
-    public float health;
-    public float maxHealth = 100f;
     public float detectionRange = 30f;
     public float shootRange = 15f;
     public float shootAccuracy = 0.1f;
@@ -194,25 +191,10 @@ public class Enemy : MonoBehaviour
             {
                 if (Random.value <= shootAccuracy)
                 {
-                    _hit.collider.GetComponent<Player>().TakeDamage(damage);
+                    _hit.collider.GetComponent<Player>().Damage((int)damage);
                 }
             }
         }
-    }
-
-    public void TakeDamage(float _damage)
-    {
-        health -= _damage;
-
-        if (health <= 0f)
-        {
-            health = 0f;
-
-            enemies.Remove(id);
-            Destroy(gameObject);
-        }
-
-        ServerSend.EnemyHealth(this);
     }
 
     private bool CanSeeTarget()

@@ -1,17 +1,30 @@
 using UnityEditor;
 using UnityEngine;
 
-public class EditorUtility
+public static class EditorUtility
 {
     [MenuItem("Tools/Editor Utility/Reset material of every mesh in current scene", false, 0)]
     public static void ResetAllMeshMaterialInScene()
     {
+        Material _defaultMaterial = null;
         int _amount = 0;
-        Material _material = new Material(Shader.Find("Standard"));
+
+        foreach (Material _material in Resources.FindObjectsOfTypeAll<Material>())
+        {
+            if (_material.name == "ProBuilderDefault")
+            {
+                _defaultMaterial = _material;
+            }
+        }
+        if (_defaultMaterial == null)
+        {
+            Debug.Log("Could not find the Pro Builder Default material!");
+            return;
+        }
 
         foreach (MeshRenderer _meshRenderer in Object.FindObjectsOfType<MeshRenderer>(true))
         {
-            _meshRenderer.material = _material;
+            _meshRenderer.sharedMaterial = _defaultMaterial;
             _amount++;
         }
 

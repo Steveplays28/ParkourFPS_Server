@@ -105,14 +105,14 @@ public class ServerSend
 
     /// <summary>Sends a player's updated position to all clients.</summary>
     /// <param name="_player">The player whose position to update.</param>
-    public static void PlayerPosition(Player _player)
+    public static void EntityPosition(Entity entity)
     {
-        using (Packet _packet = new Packet((int)ServerPackets.playerPosition))
+        using (Packet packet = new Packet((int)ServerPackets.playerPosition))
         {
-            _packet.Write(_player.id);
-            _packet.Write(_player.transform.position);
+            packet.Write(entity.id);
+            packet.Write(entity.transform.position);
 
-            SendUDPDataToAll(_packet);
+            SendUDPDataToAll(packet);
         }
     }
 
@@ -140,24 +140,24 @@ public class ServerSend
         }
     }
 
-    public static void PlayerHealth(Player _player)
+    public static void EntityHealth(Entity entity)
     {
-        using (Packet _packet = new Packet((int)ServerPackets.playerHealth))
+        using (Packet packet = new Packet((int)ServerPackets.entityHealth))
         {
-            _packet.Write(_player.id);
-            _packet.Write(_player.health);
+            packet.Write(entity.id);
+            packet.Write(entity.currentHealth);
 
-            SendTCPDataToAll(_packet);
+            SendTCPDataToAll(packet);
         }
     }
 
-    public static void PlayerRespawned(Player _player)
+    public static void EntityRespawned(Entity entity)
     {
-        using (Packet _packet = new Packet((int)ServerPackets.playerRespawned))
+        using (Packet packet = new Packet((int)ServerPackets.entityRespawned))
         {
-            _packet.Write(_player.id);
+            packet.Write(entity.id);
 
-            SendTCPDataToAll(_packet);
+            SendTCPDataToAll(packet);
         }
     }
 
@@ -266,7 +266,7 @@ public class ServerSend
         using (Packet _packet = new Packet((int)ServerPackets.enemyHealth))
         {
             _packet.Write(_enemy.id);
-            _packet.Write(_enemy.health);
+            _packet.Write(_enemy.currentHealth);
 
             SendTCPDataToAll(_packet);
         }
