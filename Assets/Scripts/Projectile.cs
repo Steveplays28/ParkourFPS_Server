@@ -51,7 +51,7 @@ public class Projectile : MonoBehaviour
         {
             if (_collider.gameObject.GetComponent<Entity>() != null)
             {
-                _collider.gameObject.GetComponent<Entity>().Damage(explosionDamage);
+                _collider.gameObject.GetComponent<Entity>().Damage(explosionDamage, thrownByPlayer);
             }
         }
 

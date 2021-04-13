@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
@@ -12,6 +11,8 @@ public class Server
     public static Dictionary<int, Client> clients = new Dictionary<int, Client>();
     public delegate void PacketHandler(int _fromClient, Packet _packet);
     public static Dictionary<int, PacketHandler> packetHandlers;
+
+    public static Dictionary<int, Entity> entities = new Dictionary<int, Entity>();
 
     private static TcpListener tcpListener;
     private static UdpClient udpListener;
@@ -32,6 +33,16 @@ public class Server
         tcpListener.BeginAcceptTcpClient(TCPConnectCallback, null);
 
         udpListener = new UdpClient(Port);
+
+#if UNITY_EDITOR
+        // For if you need to bullshit your way around the forcibly closed by remote host error
+        uint IOC_IN = 0x80000000;
+        uint IOC_VENDOR = 0x18000000;
+        uint SIO_UDP_CONNRESET = IOC_IN | IOC_VENDOR | 12;
+        udpListener.Client.IOControl((int)SIO_UDP_CONNRESET, new byte[] { Convert.ToByte(false) }, null);
+        //
+#endif
+
         udpListener.BeginReceive(UDPReceiveCallback, null);
 
         Debug.Log($"Server started on port {Port}.");
@@ -95,7 +106,7 @@ public class Server
         }
         catch (Exception _ex)
         {
-            Debug.Log($"Error receiving UDP data: {_ex}");
+            Debug.LogError($"Error receiving UDP data: {_ex}");
         }
     }
 
@@ -128,6 +139,7 @@ public class Server
         packetHandlers = new Dictionary<int, PacketHandler>()
         {
             { (int)ClientPackets.welcomeReceived, ServerHandle.WelcomeReceived },
+            { (int)ClientPackets.ping, ServerHandle.Ping },
             { (int)ClientPackets.playerMovement, ServerHandle.PlayerMovement },
             { (int)ClientPackets.playerShoot, ServerHandle.PlayerShoot },
             { (int)ClientPackets.playerStopShooting, ServerHandle.PlayerStopShooting },
@@ -143,7 +155,23 @@ public class Server
 
     public static void Stop()
     {
-        tcpListener.Stop();
-        udpListener.Close();
+        if (tcpListener != null)
+        {
+            tcpListener.Stop();
+        }
+        else
+        {
+            Debug.LogError("Failed stopping the TCP listener: TCP listener is null");
+        }
+        if (udpListener != null)
+        {
+            udpListener.Close();
+        }
+        else
+        {
+            Debug.LogError("Failed closing the UDP listener: UDP listener is null");
+        }
+
+        Debug.Log("Stopped server.");
     }
 }

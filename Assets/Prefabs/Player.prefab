@@ -129,14 +129,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 10a3aab0770abde4b94f5c2dbbb4ec43, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  camera: {fileID: 822291903658803691}
   id: 0
   currentHealth: 100
   maxHealth: 100
   damageEffect: {fileID: 0}
   healEffect: {fileID: 0}
-  spawnLocation: {x: 0, y: 0, z: 0}
+  spawnLocation: {x: 0, y: 25, z: 0}
+  respawnDelay: 2
   username: 
-  camera: {fileID: 822291903658803691}
   weapon: {fileID: 582690405005805014}
   weapons: []
   shootOrigin: {fileID: 4375789778787327676}

@@ -53,9 +53,10 @@ public class Weapon : MonoBehaviour
         {
             if (hit.collider.gameObject.GetComponent<Entity>() != null)
             {
-                hit.collider.gameObject.GetComponent<Entity>().Damage(damage);
+                hit.collider.gameObject.GetComponent<Entity>().Damage(damage, entity.id);
             }
         }
+        ServerSend.EntityShoot(entity);
         currentAmmo -= ammoPerShot;
 
         if (isAutomatic && shooting)
@@ -80,13 +81,16 @@ public class Weapon : MonoBehaviour
 
     public IEnumerator Reload()
     {
-        if (entity.currentHealth <= 0f || currentAmmo == maxAmmo)
+        if (entity.currentHealth <= 0f || currentAmmo == maxAmmo || isReloading)
         {
             yield break;
         }
 
+        isReloading = true;
+        ServerSend.EntityReloadWeapon(entity);
         yield return new WaitForSeconds(reloadTime);
         currentAmmo = maxAmmo;
+        isReloading = false;
         Debug.Log("haha reload go brrrrr");
     }
 

@@ -18,7 +18,7 @@ public class Enemy : Entity
     public float detectionRange = 30f;
     public float shootRange = 15f;
     public float shootAccuracy = 0.1f;
-    public float damage;
+    public int damage = 100;
     public float patrolDuration = 3f;
     public float idleDuration = 1f;
 
@@ -191,7 +191,7 @@ public class Enemy : Entity
             {
                 if (Random.value <= shootAccuracy)
                 {
-                    _hit.collider.GetComponent<Player>().Damage((int)damage);
+                    _hit.collider.GetComponent<Player>().Damage(damage, id);
                 }
             }
         }

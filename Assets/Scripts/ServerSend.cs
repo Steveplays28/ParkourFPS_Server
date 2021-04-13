@@ -87,6 +87,14 @@ public class ServerSend
         }
     }
 
+    public static void Ping(int toClient)
+    {
+        using (Packet packet = new Packet((int)ServerPackets.ping))
+        {
+            SendUDPData(toClient, packet);
+        }
+    }
+
     /// <summary>Tells a client to spawn a player.</summary>
     /// <param name="_toClient">The client that should spawn the player.</param>
     /// <param name="_player">The player to spawn.</param>
@@ -103,8 +111,8 @@ public class ServerSend
         }
     }
 
-    /// <summary>Sends a player's updated position to all clients.</summary>
-    /// <param name="_player">The player whose position to update.</param>
+    /// <summary>Sends an entity's updated position to all clients.</summary>
+    /// <param name="entity">The entity whose position to update.</param>
     public static void EntityPosition(Entity entity)
     {
         using (Packet packet = new Packet((int)ServerPackets.playerPosition))
@@ -116,17 +124,17 @@ public class ServerSend
         }
     }
 
-    /// <summary>Sends a player's updated rotation to all clients except to himself (to avoid overwriting the local player's rotation).</summary>
-    /// <param name="_player">The player whose rotation to update.</param>
-    public static void PlayerRotation(Player _player)
+    /// <summary>Sends an entity's updated rotation to all clients except to himself (to avoid overwriting the local player's rotation).</summary>
+    /// <param name="entity">The entity whose rotation to update.</param>
+    public static void PlayerRotation(Entity entity)
     {
-        using (Packet _packet = new Packet((int)ServerPackets.playerRotation))
+        using (Packet packet = new Packet((int)ServerPackets.playerRotation))
         {
-            _packet.Write(_player.id);
-            _packet.Write(_player.transform.rotation);
-            _packet.Write(_player.camera.transform.rotation);
+            packet.Write(entity.id);
+            packet.Write(entity.transform.rotation);
+            packet.Write(entity.camera.transform.rotation);
 
-            SendUDPDataToAll(_player.id, _packet);
+            SendUDPDataToAll(entity.id, packet);
         }
     }
 
@@ -272,34 +280,34 @@ public class ServerSend
         }
     }
 
-    public static void PlayerShoot(int _exceptClient, Player _player)
+    public static void EntityShoot(Entity entity)
     {
-        using (Packet _packet = new Packet((int)ServerPackets.playerShoot))
+        using (Packet packet = new Packet((int)ServerPackets.entityShoot))
         {
-            _packet.Write(_player.id);
+            packet.Write(entity.id);
 
-            SendTCPDataToAll(_exceptClient, _packet);
+            SendTCPDataToAll(packet);
         }
     }
 
-    public static void PlayerEquipWeapon(int _exceptClient, Player _player, int _weaponId)
+    public static void EntityEquipWeapon(Entity entity, int weaponId)
     {
-        using (Packet _packet = new Packet((int)ServerPackets.playerEquipWeapon))
+        using (Packet packet = new Packet((int)ServerPackets.entityEquipWeapon))
         {
-            _packet.Write(_player.id);
-            _packet.Write(_weaponId);
+            packet.Write(entity.id);
+            packet.Write(weaponId);
 
-            SendTCPDataToAll(_exceptClient, _packet);
+            SendTCPDataToAll(packet);
         }
     }
 
-    public static void PlayerReloadWeapon(int _exceptClient, Player _player)
+    public static void EntityReloadWeapon(Entity entity)
     {
-        using (Packet _packet = new Packet((int)ServerPackets.playerReloadWeapon))
+        using (Packet packet = new Packet((int)ServerPackets.entityReloadWeapon))
         {
-            _packet.Write(_player.id);
+            packet.Write(entity.id);
 
-            SendTCPDataToAll(_exceptClient, _packet);
+            SendTCPDataToAll(packet);
         }
     }
     #endregion

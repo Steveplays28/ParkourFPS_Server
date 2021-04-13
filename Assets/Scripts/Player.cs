@@ -1,18 +1,17 @@
 ﻿using System.Collections;
 using UnityEngine;
 
+[RequireComponent(typeof(Rigidbody))]
 public class Player : Entity
 {
     [Header("Player")]
-    public string username;
-    public new Camera camera;
-
     private Rigidbody rb;
     private Vector3 localVelocity;
 
     [Header("Weapon")]
     public Weapon weapon;
     public Weapon[] weapons;
+    public int currentWeaponId;
     public Transform shootOrigin;
 
     [Header("Projectiles")]
@@ -21,18 +20,8 @@ public class Player : Entity
     public float throwForce;
 
     [Header("Movement")]
-    public int acceleration;
-    public int counterAcceleration;
-    public float crouchMaxSpeed;
-    public float walkMaxSpeed;
-    public float runMaxSpeed;
     [HideInInspector]
     public bool[] inputs;
-    public bool isRunning;
-
-    private float maxSpeed;
-    private bool canMoveFAndB = true;
-    private bool canMoveLAndR = true;
 
     [Header("Wallrunning")]
     public bool isWallrunning;
@@ -58,15 +47,13 @@ public class Player : Entity
     public float healDelayBig;
     public float healDelaySmall;
 
-    public void Initialize(int _id, string _username)
+    public override void Initialize(int newId, string newUsername)
     {
-        id = _id;
-        username = _username;
-        maxSpeed = walkMaxSpeed;
-        inputs = new bool[5];
-
         rb = gameObject.GetComponent<Rigidbody>();
         rb.isKinematic = false;
+        inputs = new bool[5];
+
+        base.Initialize(newId, newUsername);
     }
 
     /// <summary>Processes player input and moves the player.</summary>
@@ -321,10 +308,10 @@ public class Player : Entity
         }
     }
 
-    public override void Damage(int amount)
+    public override void Damage(int amount, int damageDealerId)
     {
         // Override code here
-        base.Damage(amount);
+        base.Damage(amount, damageDealerId);
     }
 
     public override void Heal(int amount)
@@ -333,33 +320,29 @@ public class Player : Entity
         base.Heal(amount);
     }
 
-    private IEnumerator HealAutomatic(float _healDelay)
+    public override void Die()
     {
-        if (currentHealth <= 0f)
-        {
-            yield break;
-        }
+        rb.isKinematic = true;
+        canMoveFAndB = false;
+        canMoveLAndR = false;
 
-        if (currentHealth != maxHealth)
-        {
-            yield return new WaitForSeconds(_healDelay);
-            Heal((int)healAmount);
-            StartCoroutine(HealAutomatic(healDelaySmall));
-        }
+        base.Die();
     }
 
     public override IEnumerator Respawn()
     {
         yield return new WaitForSeconds(respawnDelay);
 
-        currentHealth = maxHealth;
-        rb.isKinematic = false;
+        Heal(int.MaxValue);
         foreach (Weapon _weapon in weapons)
         {
             _weapon.ResetWeapon();
         }
+        rb.isKinematic = false;
         canMoveFAndB = true;
         canMoveLAndR = true;
+
+        ServerSend.EntityRespawned(this);
     }
 
     public bool AttemptPickupItem()
@@ -373,7 +356,7 @@ public class Player : Entity
         return true;
     }
 
-    public void EquipWeapon(int _weaponId)
+    public void EquipWeapon(int weaponId)
     {
         if (currentHealth <= 0f)
         {
@@ -392,8 +375,10 @@ public class Player : Entity
             _weapon.gameObject.SetActive(false);
         }
 
-        weapon = _weapons[_weaponId];
-        _weapons[_weaponId].gameObject.SetActive(true);
-        ServerSend.PlayerEquipWeapon(id, this, _weaponId);
+        weapon = _weapons[weaponId];
+        _weapons[weaponId].gameObject.SetActive(true);
+        currentWeaponId = weaponId;
+
+        ServerSend.EntityEquipWeapon(this, weaponId);
     }
 }

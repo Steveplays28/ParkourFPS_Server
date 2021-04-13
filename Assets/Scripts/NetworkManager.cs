@@ -1,10 +1,11 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class NetworkManager : MonoBehaviour
 {
     public static NetworkManager instance;
+
+    public int maxPlayers = 48;
+    public int port = 26950;
 
     public GameObject playerPrefab;
     public GameObject enemyPrefab;
@@ -28,7 +29,7 @@ public class NetworkManager : MonoBehaviour
         QualitySettings.vSyncCount = 0;
         Application.targetFrameRate = 30;
 
-        Server.Start(50, 26950);
+        Server.Start(maxPlayers, port);
     }
 
     private void OnApplicationQuit()

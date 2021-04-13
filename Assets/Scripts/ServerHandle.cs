@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class ServerHandle
 {
@@ -15,6 +13,11 @@ public class ServerHandle
             Debug.Log($"Player \"{_username}\" (ID: {_fromClient}) has assumed the wrong client ID ({_clientIdCheck})!");
         }
         Server.clients[_fromClient].SendIntoGame(_username);
+    }
+
+    public static void Ping(int fromClient, Packet packet)
+    {
+        ServerSend.Ping(fromClient);
     }
 
     public static void PlayerMovement(int _fromClient, Packet _packet)
@@ -32,7 +35,14 @@ public class ServerHandle
 
     public static void PlayerShoot(int _fromClient, Packet _packet)
     {
-        Server.clients[_fromClient].player.weapon.Shoot();
+        if (Server.clients[_fromClient].player.weapon.shooting)
+        {
+            return;
+        }
+        else
+        {
+            Server.clients[_fromClient].player.weapon.Shoot();
+        }
     }
 
     public static void PlayerStopShooting(int fromClient, Packet packet)
@@ -62,11 +72,11 @@ public class ServerHandle
         Server.clients[_fromClient].player.Crouch();
     }
 
-    public static void PlayerEquipWeapon(int _fromClient, Packet _packet)
+    public static void PlayerEquipWeapon(int fromClient, Packet packet)
     {
-        int _weaponId = _packet.ReadInt();
+        int weaponId = packet.ReadInt();
 
-        Server.clients[_fromClient].player.EquipWeapon(_weaponId);
+        Server.clients[fromClient].player.EquipWeapon(weaponId);
     }
 
     public static void PlayerReloadWeapon(int _fromClient, Packet _packet)

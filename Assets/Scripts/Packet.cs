@@ -7,6 +7,7 @@ using UnityEngine;
 public enum ServerPackets
 {
     welcome = 1,
+    ping,
     spawnPlayer,
     playerPosition,
     playerRotation,
@@ -22,15 +23,16 @@ public enum ServerPackets
     spawnEnemy,
     enemyPosition,
     enemyHealth,
-    playerShoot,
-    playerEquipWeapon,
-    playerReloadWeapon
+    entityShoot,
+    entityEquipWeapon,
+    entityReloadWeapon
 }
 
 /// <summary>Sent from client to server.</summary>
 public enum ClientPackets
 {
     welcomeReceived = 1,
+    ping,
     playerMovement,
     playerShoot,
     playerStopShooting,

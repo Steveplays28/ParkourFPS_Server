@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using UnityEngine;
@@ -262,5 +260,6 @@ public class Client
         udp.Disconnect();
 
         ServerSend.PlayerDisconnected(id);
+        Server.entities.Remove(id);
     }
 }
